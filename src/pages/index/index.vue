@@ -109,6 +109,9 @@ const handleImageTap = ({ id }) => {
 			break;
 		case 2:
 			console.log('客服中心');
+			uni.navigateTo({
+				url: '/pages/contact/contact'
+			});
 			break;
 		case 3:
 			const mapContext = uni.createMapContext('map');
@@ -116,6 +119,9 @@ const handleImageTap = ({ id }) => {
 			break;
 		case 4:
 			console.log('个人中心');
+			uni.navigateTo({
+				url: '/pages/profile/profile'
+			});
 			break;
 		default:
 			break;
