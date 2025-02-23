@@ -27,12 +27,17 @@
 <script setup>
 import { onLoad } from '@dcloudio/uni-app';
 import { ref } from 'vue';
-import { markers } from '../../pages-data/index.js';
+// import { markers } from '../../pages-data/index.js';
+import api from '../../api/index.js';
 
 const longitude = ref(0);
 const latitude = ref(0);
 const currentMarker = ref(null);
 const isScan = ref(true);
+const markers = ref([]);
+const orderNo = ref(uni.getStorageSync('orderNo') || '');
+
+const app = getApp();
 
 onLoad(() => {
 	uni.getLocation({
@@ -45,25 +50,116 @@ onLoad(() => {
 			console.log('err', err);
 		}
 	});
+
+	api.getStadiumList().then((res) => {
+		if (res.code === 0) {
+			console.log('res', res);
+			app.globalData.markers = markers.value = res.data.map((i) => {
+				return {
+					...i,
+					width: 40,
+					height: 40,
+					iconPath: '/static/icon.png',
+					latitude: +i.latitude,
+					longitude: +i.longitude,
+					title: i.name
+				};
+			});
+		} else {
+			uni.showToast({
+				title: res.message,
+				icon: 'none'
+			});
+		}
+	});
 });
 
 const handleMarkerTap = (e) => {
-	const current = markers.find((i) => i.id === e.detail.markerId);
+	const current = markers.value.find((i) => i.id === e.detail.markerId);
 	console.log('current', current);
 	currentMarker.value = current;
 	isScan.value = false;
 };
 
 const handleScan = () => {
+	if (!app.globalData.token) {
+		uni.showModal({
+			title: '尚未登录',
+			content: '点击确认进行登录',
+			success(res) {
+				if (res.confirm) {
+					uni.navigateTo({
+						url: '/pages/login/login'
+					});
+				}
+			}
+		});
+		return;
+	}
+
 	uni.scanCode({
 		success(res) {
-			console.log('res', res);
+			console.log('res', res.result);
+
+			const stadiumId = res.result;
+
+			if (!orderNo.value) {
+				console.log('create');
+				api.orderCreate({ stadiumId }).then((res) => {
+					if (res.code === 0) {
+						if (res.data.orderNo) {
+							orderNo.value = res.data.orderNo;
+
+							uni.setStorage({
+								key: 'orderNo',
+								data: res.data.orderNo
+							});
+
+							uni.showToast({
+								title: '创建成功',
+								icon: 'none'
+							});
+						} else {
+							uni.showToast({
+								title: '创建失败',
+								icon: 'none'
+							});
+						}
+					} else {
+						uni.showToast({
+							title: '创建失败',
+							icon: 'none'
+						});
+					}
+				});
+			} else {
+				api.orderFinish({
+					orderNo: orderNo.value
+				}).then((res) => {
+					if (res.code === 0) {
+						uni.removeStorage({
+							key: 'orderNo'
+						});
+
+						uni.showToast({
+							title: '结束成功',
+							icon: 'none'
+						});
+					} else {
+						uni.showToast({
+							title: res.message,
+							icon: 'none'
+						});
+					}
+				});
+				console.log('finish');
+			}
 		}
 	});
 };
 
 const handleMapTap = () => {
-	isScan.value = true;
+	// isScan.value = true;
 };
 
 const handleNavTap = () => {
@@ -119,6 +215,20 @@ const handleImageTap = ({ id }) => {
 			break;
 		case 4:
 			console.log('个人中心');
+			if (!app.globalData.token) {
+				uni.showModal({
+					title: '尚未登录',
+					content: '点击确认进行登录',
+					success(res) {
+						if (res.confirm) {
+							uni.navigateTo({
+								url: '/pages/login/login'
+							});
+						}
+					}
+				});
+				return;
+			}
 			uni.navigateTo({
 				url: '/pages/profile/profile'
 			});

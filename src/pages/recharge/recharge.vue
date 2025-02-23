@@ -2,7 +2,7 @@
 	<view class="recharge-box">
 		<view class="recharge-desc">
 			当前账户余额：
-			<text>100.00</text>
+			<text>{{ formatAmount(app.globalData.userInfo.amount) }}</text>
 			元
 		</view>
 		<view class="recharge-list">
@@ -20,6 +20,9 @@
 
 <script setup>
 import { ref } from 'vue';
+import api from '../../api/index.js';
+import { formatAmount } from '../../utils/index.js';
+
 const list = [
 	{ id: 1, amount: 10 },
 	{ id: 2, amount: 20 },
@@ -27,6 +30,7 @@ const list = [
 	{ id: 4, amount: 100 }
 ];
 
+const app = getApp();
 const activeIndex = ref(0);
 
 const handleItemTap = (index) => {
@@ -35,10 +39,34 @@ const handleItemTap = (index) => {
 
 const handleRecharge = () => {
 	const activeItem = list.find((_, index) => index === activeIndex.value);
-	uni.showToast({
-		title: `当前充值金额: ${activeItem.amount}`,
-		mask: true,
-		icon: 'none'
+	// uni.showToast({
+	// 	title: `当前充值金额: ${activeItem.amount}`,
+	// 	mask: true,
+	// 	icon: 'none'
+	// });
+
+	api.recharge({
+		amount: activeItem.amount * 100
+	}).then((res) => {
+		if (res.code === 0) {
+			api.getUserInfo().then((res) => {
+				app.globalData.userInfo = res.data;
+
+				uni.setStorage({
+					key: 'userInfo',
+					data: res.data
+				});
+			});
+			uni.showToast({
+				title: '充值成功',
+				icon: 'none'
+			});
+		} else {
+			uni.showToast({
+				title: res.message,
+				icon: 'none'
+			});
+		}
 	});
 };
 </script>

@@ -3,7 +3,7 @@
 		<view v-for="(item, index) in list" :key="item.id">
 			<view class="question-title">{{ index + 1 }}. {{ item.title }}</view>
 			<view class="question-desc">
-				{{ item.desc }}
+				{{ item.answer }}
 			</view>
 		</view>
 	</view>
@@ -15,9 +15,11 @@ import { ref } from 'vue';
 import { getContactQuestionByType } from '../../pages-data/index.js';
 
 const list = ref([]);
+const app = getApp();
 onLoad((options) => {
 	if (options.type) {
-		list.value = getContactQuestionByType(+options.type);
+		// list.value = getContactQuestionByType(+options.type);
+		list.value = app.globalData.question.find((i) => i.id === +options.type).details;
 	}
 });
 </script>

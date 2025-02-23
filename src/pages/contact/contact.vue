@@ -23,12 +23,62 @@
 
 <script setup>
 import { ref } from 'vue';
-import { contactQuestion } from '../../pages-data/index.js';
+// import { contactQuestion } from '../../pages-data/index.js';
+import api from '../../api/index.js';
+import { onLoad } from '@dcloudio/uni-app';
+
+const contactQuestion = ref([]);
+
+const app = getApp();
+
+onLoad(() => {
+	api.getQuestionList().then((res) => {
+		if (res.code === 0) {
+			console.log('res', res);
+			app.globalData.question = contactQuestion.value = res.data.map((i) => {
+				let src = '';
+
+				switch (i.id) {
+					case 1:
+						src = '/static/flow.png';
+						break;
+					case 2:
+						src = '/static/machine.png';
+						break;
+					case 3:
+						src = '/static/deposit.png';
+						break;
+					case 4:
+						src = '/static/order.png';
+						break;
+					case 5:
+						src = '/static/repair.png';
+						break;
+					case 6:
+						src = '/static/more.png';
+						break;
+					default:
+						break;
+				}
+
+				return {
+					...i,
+					src
+				};
+			});
+		} else {
+			uni.showToast({
+				title: res.message,
+				icon: 'none'
+			});
+		}
+	});
+});
 
 const handleItemTap = (item) => {
 	console.log(item);
 	uni.navigateTo({
-		url: `/pages/question/question?type=${item.type}`
+		url: `/pages/question/question?type=${item.id}`
 	});
 };
 

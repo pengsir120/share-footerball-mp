@@ -31,7 +31,7 @@
 				<image src="/src/static/time.png" mode="widthFix"></image>
 			</view>
 			<view class="ground-detail-center">
-				<text>营业时间: 周一到周日 {{ groundInfo?.startTime }} - {{ groundInfo?.endTime }}</text>
+				<text>营业时间: {{ groundInfo?.startTime }} - {{ groundInfo?.endTime }}</text>
 			</view>
 		</view>
 		<!-- 停车场 -->
@@ -40,7 +40,7 @@
 				<image src="/src/static/parking.png" mode="widthFix"></image>
 			</view>
 			<view class="ground-detail-center">
-				<text>停车场: {{ groundInfo?.isPark ? '有' : '无' }}</text>
+				<text>停车场: {{ groundInfo?.isParking ? '有' : '无' }}</text>
 			</view>
 		</view>
 		<!-- 卫生间 -->
@@ -76,25 +76,27 @@
 <script setup>
 import { onLoad } from '@dcloudio/uni-app';
 import { ref } from 'vue';
-import { getGroundInfoById } from '../../pages-data/index.js';
+// import { getGroundInfoById } from '../../pages-data/index.js';
 
 const groundInfo = ref(null);
+const app = getApp();
 
 onLoad((options) => {
 	// groundInfo.value = getGroundInfoById(1);
 	// console.log('groundInfo', groundInfo.value)
 	if (options.id) {
-		groundInfo.value = getGroundInfoById(+options.id);
+		// groundInfo.value = getGroundInfoById(+options.id);
+		groundInfo.value = app.globalData.markers.find((i) => i.id === +options.id);
 		console.log('groundInfo', groundInfo.value);
 	}
 });
 
 const handleTap = () => {
 	uni.openLocation({
-		longitude: groundInfo.value.marker.longitude,
-		latitude: groundInfo.value.marker.latitude,
-		name: groundInfo.value.marker.title,
-		address: groundInfo.value.marker.address,
+		longitude: groundInfo.value.longitude,
+		latitude: groundInfo.value.latitude,
+		name: groundInfo.value.title,
+		address: groundInfo.value.address,
 		success(res) {
 			console.log('res', res);
 		},

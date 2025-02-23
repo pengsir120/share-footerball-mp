@@ -1,11 +1,11 @@
 <template>
 	<view class="profile-box">
 		<view class="profile-top">
-			<view v-if="isLogin" class="profile-user">
-				<image class="user-avatar" src="../../static/avatar.png" mode="widthFix"></image>
-				<view class="user-nickname ellipsis">哈喽伍德哈喽伍德哈喽伍德哈喽伍德哈喽伍德哈喽伍德</view>
+			<view class="profile-user">
+				<image class="user-avatar" :src="app.globalData.userInfo.avatar" mode="widthFix" @tap="handleModifyAvatar"></image>
+				<view class="user-nickname ellipsis">{{ app.globalData.userInfo.name || '-' }}</view>
 			</view>
-			<button v-else class="button" @tap="handleTap">点击登录</button>
+			<!-- <button v-else class="button" @tap="handleTap">点击登录</button> -->
 		</view>
 		<view class="profile-bottom">
 			<view class="item" v-for="item in list" :key="item.id" @tap="handleItemTap(item)">
@@ -31,6 +31,8 @@ const handleTap = () => {
 		url: '/pages/login/login'
 	});
 };
+
+const app = getApp();
 
 // 个人中心功能列表
 const list = [
@@ -116,6 +118,12 @@ const handleItemTap = (item) => {
 	// 		console.log(item.name);
 	// 		break;
 	// }
+};
+
+const handleModifyAvatar = () => {
+	uni.navigateTo({
+		url: '/pages/login/login'
+	});
 };
 </script>
 
